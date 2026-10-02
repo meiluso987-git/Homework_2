@@ -5,6 +5,486 @@ format: html
 editor: visual
 ---
 
-## Problem1
+The github website: https://github.com/meiluso987-git/Homework_2
 
-123
+# Problem1:
+
+## a. Simulation function
+
+```{r}
+#' Title Simulate a 2D random walk with momentum
+#'
+#' Simulates a particle moving in two dimensions on a square lattice.
+#' The first step chooses one of four directions uniformly at random.
+#' From the second step onward, 
+#' with probability p the particle continues in the same direction as previous, 
+#' and with probability \(1-p\) it re-randomizes uniformly among the four directions.
+#' 
+#' @param n Integer. Number of steps to take.
+#' @param p Numeric. Momentum probability, between 0 and 1.
+#'
+#' @returns A numeric vector of length 2 giving the final coordinates
+#' @export
+#'
+#' @examples
+#' momentum_walk(10, 0.6)
+momentum_walk <- function(n, p) {
+  if (n < 1 || n != round(n)) stop("n must be a positive integer")
+  if (p < 0 || p > 1) stop("p must be between 0 and 1")
+
+  dirs <- list(c(1, 0), c(-1, 0), c(0, 1), c(0, -1))  # 4 direction
+
+  # First step
+  d <- sample(1:4, 1)
+  x <- dirs[[d]][1]
+  y <- dirs[[d]][2]
+
+  # Second step
+  for (i in 2:n) {
+    if (runif(1) >= p) {
+      d <- sample(1:4, 1)
+    }
+    x <- x + dirs[[d]][1]
+    y <- y + dirs[[d]][2]
+  }
+
+  c(x, y)
+}
+```
+
+Example:
+
+```{r}
+momentum_walk(10, 0.6)
+```
+
+## b. Implement the simulation
+
+### Version 1: for loop
+
+```{r}
+#' Title Simulate a 2D random walk with momentum (for-loop version)
+#' 
+#' First step chooses one of four directions uniformly. 
+#' From step 2 onward,
+#' with probability p the particle keeps the previous direction; 
+#' with probability 1-p it re-randomizes uniformly among the four directions.
+#'
+#' @param n Integer. Number of steps, must be >= 1.
+#' @param p Numeric. Momentum probability, between 0 and 1.
+#'
+#' @returns A numeric vector c(x, y) of the final position.
+#' @export
+#'
+#' @examples
+#' momentum_walk1(10, 0.6)
+momentum_walk1 <- function(n, p) {
+  if (n < 1 || n != round(n)) stop("n must be a positive integer")
+  if (p < 0 || p > 1) stop("p must be between 0 and 1")
+
+  dirs <- list(c(1, 0), c(-1, 0), c(0, 1), c(0, -1))
+  d <- sample(1:4, 1)
+  x <- dirs[[d]][1]; y <- dirs[[d]][2]
+
+  for (i in 2:n) {
+    if (runif(1) >= p) d <- sample(1:4, 1)
+    x <- x + dirs[[d]][1]
+    y <- y + dirs[[d]][2]
+  }
+  c(x, y)
+}
+```
+
+### Version 2: Reduce (apply-family)
+
+```{r}
+#' Title Simulate a 2D random walk with momentum (Reduce version)
+#' 
+#' using Reduce(). 
+#' which applies the step-update function repeatedly across n-1 remaining steps.
+#'
+#' @param n Integer. Number of steps, must be >= 1.
+#' @param p Numeric. Momentum probability, between 0 and 1.
+#'
+#' @returns A numeric vector c(x, y) of the final position.
+#' @export
+#'
+#' @examples
+#' momentum_walk2(10, 0.6)
+momentum_walk2 <- function(n, p) {
+  if (n < 1 || n != round(n)) stop("n must be a positive integer")
+  if (p < 0 || p > 1) stop("p must be between 0 and 1")
+
+  dirs <- list(c(1, 0), c(-1, 0), c(0, 1), c(0, -1))
+
+  # First step
+  d0 <- sample(1:4, 1)
+  state <- c(x = dirs[[d0]][1], y = dirs[[d0]][2], dir = d0)
+
+  # Second step
+  step <- function(state, dummy) {
+    if (runif(1) >= p) state["dir"] <- sample(1:4, 1)
+    state["x"] <- state["x"] + dirs[[state["dir"]]][1]
+    state["y"] <- state["y"] + dirs[[state["dir"]]][2]
+    state
+  }
+
+  final_state <- Reduce(step, init = state, x = 1:(n - 1))
+  as.vector(c(final_state["x"], final_state["y"]))
+}
+```
+
+Example:
+
+```{r}
+momentum_walk1(10, 0.6)
+momentum_walk2(10, 0.6)
+momentum_walk1(1000, 0.6)
+momentum_walk2(1000, 0.6)
+```
+
+Briefly explain the logic of each implementation：
+
+'momentum_walk1' uses an explicit for‑loop. It samples the first‑step direction, then updates position: with probability (1-p) it picks a new direction, and with probability p it retains the old direction for momentum, before updating coordinates.
+
+'momentum_walk2' uses 'Reduce()'. The whole walk state (position + direction) is wrapped in one vector. A step‑update function modifies this state for one move, and 'Reduce' repeatedly applies this function over all remaining steps to produce the final position.
+
+## c. Reproducibility
+
+```{r}
+set.seed(42)
+momentum_walk1(10, 0.6)      
+
+set.seed(42)
+momentum_walk2(10, 0.6)      
+
+set.seed(123)
+momentum_walk1(1000, 0.6)    
+
+set.seed(123)
+momentum_walk2(1000, 0.6)    
+```
+
+What I did:
+
+I used 'set.seed(integer)' immediately before running the random‑walk simulation. And then use 'momentum_walk1()' and 'momentum_walk1()' with identical function arguments.
+
+Seed values 42 and 123 are arbitrary integers; any valid integer would serve the same purpose. After setting the same seed, the simulation produced exactly matching final‑position outputs on repeated runs.
+
+Why it works:
+
+R does not produce truly random numbers; it uses a deterministic pseudo‑random‑number algorithm. Once a seed is fixed, every subsequent call to random‑generating functions will return the identical sequence of random numbers.
+
+As a result, the sequence of directions chosen inside the momentum walk stays unchanged, so the simulated walk ends at the same coordinate.
+
+This achieves reproducibility.
+
+## d. Does momentum matter?
+
+```{r}
+set.seed(42)
+w0   <- momentum_walk1(1000, 0)
+w05  <- momentum_walk1(1000, 0.5)
+w09  <- momentum_walk1(1000, 0.9)
+
+c(paste0("p=0:   (", w0[1], ", ", w0[2], "), D = ", round(sqrt(sum(w0^2)), 2)))
+c(paste0("p=0.5: (", w05[1], ", ", w05[2], "), D = ", round(sqrt(sum(w05^2)), 2)))
+c(paste0("p=0.9: (", w09[1], ", ", w09[2], "), D = ", round(sqrt(sum(w09^2)), 2)))
+```
+
+i.  Compare the final distances for the three simulations.
+
+We simulate three 1000‑step walks for (p=0, 0.5, 0.9). Euclidean distance ($D=\sqrt{x^2+y^2}$) is computed for each final position.
+
+From the output, distance grows as p increases.
+
+ii. Does increasing momentum appear to increase or decrease the final distance?
+
+Increasing momentum appears to increase the final distance from the starting point.
+
+iii. Explain your reasoning (optional).
+
+Higher momentum makes the walker persist in the same direction for many steps. Steps add together instead of cancelling out.
+
+When (p=0), direction is re‑sampled every step; many steps point backward, so displacement remains small. Larger p produces larger displacement.
+
+## e. Monte Carlo simulation
+
+This table may need some time to work.
+
+```{r}
+ps <- c(0, 0.25, 0.5, 0.75, 0.9)
+n_sims <- 1000
+n_steps <- 1000
+
+set.seed(123)
+results <- lapply(ps, function(p_val) {
+  dists <- replicate(n_sims, {
+    pos <- momentum_walk1(n_steps, p_val)
+    sqrt(pos[1]^2 + pos[2]^2)
+  })
+  data.frame(p = p_val, mean_distance = round(mean(dists), 2))
+})
+mc_table <- do.call(rbind, results)
+print(mc_table)
+```
+
+iv. How does the mean final distance change as p increases?
+
+As p increases, the mean final distance from the starting point increases. Higher momentum makes the walker persist in one direction, so displacements add together rather than cancelling each other. This yields larger average Euclidean distance.
+
+## f. Compare computational performance
+
+```{r}
+library(microbenchmark)
+
+# n = 1000 steps, p = 0.6
+mb1 <- microbenchmark(
+  loop  = momentum_walk1(1000, 0.6),   # loop
+  apply = momentum_walk2(1000, 0.6),    # Reduce
+  times = 100
+)
+cat("n = 1000, p = 0.6\n")
+print(mb1)
+
+# n = 100000 steps, p = 0.6
+mb2 <- microbenchmark(
+  loop  = momentum_walk1(100000, 0.6),
+  apply = momentum_walk2(100000, 0.6),
+  times = 10
+)
+cat("n = 100000, p = 0.6\n")
+print(mb2)
+```
+
+i.  Which implementation is faster?
+
+The 'loop' implementation is faster.
+
+ii. Does the difference become larger for the larger input?
+
+Yes,
+
+n=1000：the time gap is almost 1051 microseconds;
+
+n=100000：the time gap is almost 115 milliseconds.
+
+So the time difference becomes larger for the larger input (n=100000).
+
+iii. Why might the implementations have different execution times?
+
+Although 'Reduce' belongs to the apply‑family, every iteration invokes an R‑level helper 'step()' function. Repeated function‑call overhead accumulates for large n. The plain for‑loop avoids repeated function calls inside each iteration, so it has lower overhead and runs faster.
+
+# Problem 2: Monte Carlo Simulation of Campus Bus Arrivals
+
+```{r}
+set.seed(2026)
+n <- 10000
+
+# 6-8 AM
+block_1 <- rowSums(matrix(rpois(3 * n, lambda = 4), ncol = 3))
+
+# 9 AM
+block_2 <- rnorm(n, mean = 45, sd = 4)
+
+# 10 AM-3 PM
+block_3 <- rowSums(matrix(rpois(6 * n, lambda = 15), ncol = 6))
+
+# 4 PM
+block_4 <- rnorm(n, mean = 55, sd = 5)
+
+# 5-10 PM
+block_5 <- rowSums(matrix(rpois(6 * n, lambda = 9), ncol = 6))
+
+# the sum
+daily_total <- block_1 + block_2 + block_3 + block_4 + block_5
+
+# average daily
+expected_passengers <- mean(daily_total)
+print(expected_passengers)
+
+# average daily, rounded to nearest integer
+expected_passengers_nearest <- round(mean(daily_total))
+print(expected_passengers_nearest)
+```
+
+# Problem 3: Linear Regression
+
+download data:
+
+```{r}
+youtube <- read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-02/youtube.csv")
+```
+
+## a. Data preparation and de-identification
+
+```{r}
+# origin
+cat("original names：\n")
+print(colnames(youtube))
+cat("original dim", dim(youtube), "\n\n")
+
+# removing
+youtube_deid <- youtube[, !(colnames(youtube) %in% c(
+  "brand", "title", "superbowl_ads_dot_com_url", "youtube_url",
+  "channel_title", "published_at", "id", "kind", "etag",
+  "description", "thumbnail"
+))]
+
+# results
+cat("after removing：", dim(youtube_deid), "\n")
+cat("names after removing：\n")
+print(colnames(youtube_deid))
+```
+
+## b. Exploring potential outcomes
+
+Check favorite_count: how many 0?
+
+```{r}
+table(youtube_deid$favorite_count)
+```
+
+Plot histograms of the five engagement variables:
+
+```{r}
+par(mfrow = c(2,3))
+hist(youtube_deid$view_count, main = "view_count", xlab = "Views")
+hist(youtube_deid$like_count, main = "like_count", xlab = "Likes")
+hist(youtube_deid$dislike_count, main = "dislike_count", xlab = "Dislikes")
+hist(youtube_deid$favorite_count, main = "favorite_count", xlab = "Favorites")
+hist(youtube_deid$comment_count, main = "comment_count", xlab = "Comments")
+par(mfrow = c(1,1))
+```
+
+Calculate the skewness:
+
+```{r}
+raw_vars <- c("view_count", "like_count", "dislike_count", "favorite_count", "comment_count")
+
+#' Title Calculate sample skewness
+#' 
+#' Computes the sample skewness coefficient of a numeric vector, ignoring missing values. 
+#' A value near 0 indicates approximate symmetry; 
+#' large positive values indicate right (positive) skewness.
+#'
+#' @param x Numeric vector. May contain NA values, which are removed.
+#'
+#' @returns Numeric scalar: the sample skewness. 
+#' @export
+#'
+#' @examples
+#' calc_skewness(c(1, 2, 3, 4, 5))    # symmetric
+calc_skewness <- function(x) {
+  x <- x[!is.na(x)]
+  n <- length(x)
+  if (n == 0) return(NA) 
+  mean_x <- mean(x)
+  sd_x <- sd(x)
+  if (is.na(sd_x) || sd_x == 0) return(0)
+  (sum((x - mean_x)^3) / n) / (sd_x^3)
+}
+cat("Skewness of Raw Variables:\n")
+for (v in raw_vars) {
+  cat(sprintf("%s: %.2f\n", v, calc_skewness(youtube_deid[[v]])))
+}
+```
+
+Judgment from the plogs and skewness:
+
+1.  View Counts (Category 2: Transformed) : The raw histogram and high positive skewness (13.63) indicate extreme right-skewness. The log(x+1) transformation compresses the extreme values and reduces the skewness.
+
+2.  Like Counts (Category 2: Transformed) : like counts are right-skewed count data(8.66) with heavy tails. The log(x+1) transformation stabilizes the variance and normalizes the distribution.
+
+3.  Dislike Counts (Category 2: Transformed) : Dislike counts are right-skewed(11.40) and contain a large number of zeros. The log(x+1) transformation (log1p) is necessary to handle the zeros while reducing the skewness.
+
+4.  Favorite Counts (Category 3: Not Appropriate) : As shown by the table() check, this variable is almost entirely zeros. Because linear regression requires variation in the dependent variable to estimate a relationship, this variable is not appropriate as an outcome.
+
+5.  Comment Counts (Category 2: Transformed) : Comment counts are right-skewed(7.88) with a long tail and many zero values. The log(x+1) transformation effectively makes the distribution more symmetric.
+
+Classification and calculate the new skewness:
+
+```{r}
+# Classification and judgment
+youtube_deid$log_view <- log(youtube_deid$view_count + 1)
+youtube_deid$log_like <- log(youtube_deid$like_count + 1)
+youtube_deid$log_dislike <- log(youtube_deid$dislike_count + 1)
+
+youtube_deid$log_comment <- log(youtube_deid$comment_count + 1)
+
+# Calculate skewness for transformed variables to check improvement
+transformed_vars <- c("log_view", "log_like", "log_dislike", "log_comment")
+cat("\nSkewness of Transformed Variables:\n")
+for (v in transformed_vars) {
+  cat(sprintf("%s: %.2f\n", v, calc_skewness(youtube_deid[[v]])))
+}
+```
+
+## c. Fitting linear regression models
+
+```{r}
+binary_vars <- c("funny", "show_product_quickly", "patriotic", "celebrity", "danger", "animals", "use_sex")
+outcome_vars <- c("log_view", "log_like", "log_dislike", "log_comment")
+
+results_c <- data.frame()
+
+for(y_var in outcome_vars){
+  for(x_var in binary_vars){
+    form <- as.formula(paste(y_var, "~", x_var, "+ year"))
+    mod <- lm(form, data = youtube_deid)
+    coef_table <- summary(mod)$coefficients
+    # beta and Pvalue
+    beta_est <- coef_table[2,1]
+    p_val <- coef_table[2,4]
+    results_c <- rbind(results_c,
+                       data.frame(
+                         Outcome = y_var,
+                         Feature = x_var,
+                         Coefficient = beta_est,
+                         Pvalue = p_val
+                       ))
+  }
+}
+
+results_c
+# α=0.05
+results_c[results_c$Pvalue < 0.05, ]
+```
+
+1.  At the α = 0.05 level, none of the 28 fitted models shows a statistically significant association between a commercial characteristic and YouTube engagement.
+
+    The smallest p-value is approximately 0.08 (for 'danger' predicting 'log_like'), which is marginally significant but does not pass the 0.05 threshold.
+
+2.  Several characteristics show positive coefficients (e.g., 'funny', 'patriotic', 'danger'), meaning ads with those features tend to have higher log-engagement, while 'animals' and 'use_sex' tend to have negative coefficients. However, none of these estimates is statistically significant.
+
+3.  For log_view, the largest positive estimated coefficient is 'danger' (β \~ 0.67, p \~ 0.094). This variable also has the smallest p-value among the seven characteristics for predicting view counts.
+
+## d. Estimating regression coefficients using matrix algebra
+
+I selected 'danger' because it had the smallest p-value and the largest positive coefficient for predicting 'log_view' in part (c).
+
+```{r}
+# remove missing values first
+df <- na.omit(youtube_deid[, c("log_view", "danger", "year")])
+
+y <- df$log_view
+X <- cbind(intercept = 1,
+           danger    = df$danger,
+           year      = df$year)
+X <- as.matrix(X)
+y <- as.matrix(y)
+
+# beta_hat = (X^T X)^(-1) X^T y
+beta_hat <- solve(t(X) %*% X) %*% t(X) %*% y
+beta_hat
+
+# Verify with lm()
+mod_lm <- lm(log_view ~ danger + year, df)
+summary(mod_lm)$coefficients
+```
+
+I computed the OLS estimates via the matrix formula $\(\hat{\boldsymbol{\beta}} = (X^\top X)^{-1} X^\top y\)$.
+
+The resulting estimates are $\(\hat\beta_0 \approx -31.39\)$, $\(\hat\beta_{\text{danger}} \approx 0.67\)$, and $\(\hat\beta_{\text{year}} \approx 0.02\)$.
+
+These match the output of 'lm(log_view \~ danger + year, data = df)' to numerical precision, confirming that the manual matrix calculation is correct.

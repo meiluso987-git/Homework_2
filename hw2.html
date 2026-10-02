@@ -27,6 +27,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -42,6 +77,35 @@ ul.task-list li input[type="checkbox"] {
 <link href="hw2_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="hw2_files/libs/bootstrap/bootstrap-917079515d91bccb85b543faf8aa8bb6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -76,9 +140,631 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="problem1" class="level2">
-<h2 class="anchored" data-anchor-id="problem1">Problem1</h2>
-<p>123</p>
+<p>The github website: https://github.com/meiluso987-git/Homework_2</p>
+<section id="problem1" class="level1">
+<h1>Problem1:</h1>
+<section id="a.-simulation-function" class="level2">
+<h2 class="anchored" data-anchor-id="a.-simulation-function">a. Simulation function</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#' Title Simulate a 2D random walk with momentum</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#' Simulates a particle moving in two dimensions on a square lattice.</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#' The first step chooses one of four directions uniformly at random.</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#' From the second step onward, </span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">#' with probability p the particle continues in the same direction as previous, </span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">#' and with probability \(1-p\) it re-randomizes uniformly among the four directions.</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">#' </span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param n Integer. Number of steps to take.</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param p Numeric. Momentum probability, between 0 and 1.</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">#' @returns A numeric vector of length 2 giving the final coordinates</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">#' @export</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">#' @examples</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co">#' momentum_walk(10, 0.6)</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>momentum_walk <span class="ot">&lt;-</span> <span class="cf">function</span>(n, p) {</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (n <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">||</span> n <span class="sc">!=</span> <span class="fu">round</span>(n)) <span class="fu">stop</span>(<span class="st">"n must be a positive integer"</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (p <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">||</span> p <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="fu">stop</span>(<span class="st">"p must be between 0 and 1"</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  dirs <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>), <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="dv">1</span>))  <span class="co"># 4 direction</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># First step</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="dv">1</span>)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> dirs[[d]][<span class="dv">1</span>]</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> dirs[[d]][<span class="dv">2</span>]</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Second step</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span>n) {</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">runif</span>(<span class="dv">1</span>) <span class="sc">&gt;=</span> p) {</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>      d <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="dv">1</span>)</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> x <span class="sc">+</span> dirs[[d]][<span class="dv">1</span>]</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">&lt;-</span> y <span class="sc">+</span> dirs[[d]][<span class="dv">2</span>]</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(x, y)</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Example:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">momentum_walk</span>(<span class="dv">10</span>, <span class="fl">0.6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -5 -5</code></pre>
+</div>
+</div>
+</section>
+<section id="b.-implement-the-simulation" class="level2">
+<h2 class="anchored" data-anchor-id="b.-implement-the-simulation">b. Implement the simulation</h2>
+<section id="version-1-for-loop" class="level3">
+<h3 class="anchored" data-anchor-id="version-1-for-loop">Version 1: for loop</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#' Title Simulate a 2D random walk with momentum (for-loop version)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">#' </span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">#' First step chooses one of four directions uniformly. </span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">#' From step 2 onward,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#' with probability p the particle keeps the previous direction; </span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#' with probability 1-p it re-randomizes uniformly among the four directions.</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param n Integer. Number of steps, must be &gt;= 1.</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param p Numeric. Momentum probability, between 0 and 1.</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">#' @returns A numeric vector c(x, y) of the final position.</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">#' @export</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co">#' @examples</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co">#' momentum_walk1(10, 0.6)</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>momentum_walk1 <span class="ot">&lt;-</span> <span class="cf">function</span>(n, p) {</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (n <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">||</span> n <span class="sc">!=</span> <span class="fu">round</span>(n)) <span class="fu">stop</span>(<span class="st">"n must be a positive integer"</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (p <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">||</span> p <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="fu">stop</span>(<span class="st">"p must be between 0 and 1"</span>)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  dirs <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>), <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="dv">1</span>))</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="dv">1</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> dirs[[d]][<span class="dv">1</span>]; y <span class="ot">&lt;-</span> dirs[[d]][<span class="dv">2</span>]</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span>n) {</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">runif</span>(<span class="dv">1</span>) <span class="sc">&gt;=</span> p) d <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="dv">1</span>)</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> x <span class="sc">+</span> dirs[[d]][<span class="dv">1</span>]</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">&lt;-</span> y <span class="sc">+</span> dirs[[d]][<span class="dv">2</span>]</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(x, y)</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="version-2-reduce-apply-family" class="level3">
+<h3 class="anchored" data-anchor-id="version-2-reduce-apply-family">Version 2: Reduce (apply-family)</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#' Title Simulate a 2D random walk with momentum (Reduce version)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#' </span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#' using Reduce(). </span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#' which applies the step-update function repeatedly across n-1 remaining steps.</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param n Integer. Number of steps, must be &gt;= 1.</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param p Numeric. Momentum probability, between 0 and 1.</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#' @returns A numeric vector c(x, y) of the final position.</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">#' @export</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co">#' @examples</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">#' momentum_walk2(10, 0.6)</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>momentum_walk2 <span class="ot">&lt;-</span> <span class="cf">function</span>(n, p) {</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (n <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">||</span> n <span class="sc">!=</span> <span class="fu">round</span>(n)) <span class="fu">stop</span>(<span class="st">"n must be a positive integer"</span>)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (p <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">||</span> p <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="fu">stop</span>(<span class="st">"p must be between 0 and 1"</span>)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  dirs <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>), <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="dv">1</span>))</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># First step</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  d0 <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="dv">1</span>)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  state <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">x =</span> dirs[[d0]][<span class="dv">1</span>], <span class="at">y =</span> dirs[[d0]][<span class="dv">2</span>], <span class="at">dir =</span> d0)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Second step</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>  step <span class="ot">&lt;-</span> <span class="cf">function</span>(state, dummy) {</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">runif</span>(<span class="dv">1</span>) <span class="sc">&gt;=</span> p) state[<span class="st">"dir"</span>] <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="dv">1</span>)</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    state[<span class="st">"x"</span>] <span class="ot">&lt;-</span> state[<span class="st">"x"</span>] <span class="sc">+</span> dirs[[state[<span class="st">"dir"</span>]]][<span class="dv">1</span>]</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    state[<span class="st">"y"</span>] <span class="ot">&lt;-</span> state[<span class="st">"y"</span>] <span class="sc">+</span> dirs[[state[<span class="st">"dir"</span>]]][<span class="dv">2</span>]</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    state</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>  final_state <span class="ot">&lt;-</span> <span class="fu">Reduce</span>(step, <span class="at">init =</span> state, <span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span>(n <span class="sc">-</span> <span class="dv">1</span>))</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.vector</span>(<span class="fu">c</span>(final_state[<span class="st">"x"</span>], final_state[<span class="st">"y"</span>]))</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Example:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">momentum_walk1</span>(<span class="dv">10</span>, <span class="fl">0.6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2 0</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">momentum_walk2</span>(<span class="dv">10</span>, <span class="fl">0.6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -3  3</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">momentum_walk1</span>(<span class="dv">1000</span>, <span class="fl">0.6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -57   5</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">momentum_walk2</span>(<span class="dv">1000</span>, <span class="fl">0.6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 21  3</code></pre>
+</div>
+</div>
+<p>Briefly explain the logic of each implementation：</p>
+<p>‘momentum_walk1’ uses an explicit for‑loop. It samples the first‑step direction, then updates position: with probability (1-p) it picks a new direction, and with probability p it retains the old direction for momentum, before updating coordinates.</p>
+<p>‘momentum_walk2’ uses ‘Reduce()’. The whole walk state (position + direction) is wrapped in one vector. A step‑update function modifies this state for one move, and ‘Reduce’ repeatedly applies this function over all remaining steps to produce the final position.</p>
+</section>
+</section>
+<section id="c.-reproducibility" class="level2">
+<h2 class="anchored" data-anchor-id="c.-reproducibility">c.&nbsp;Reproducibility</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">momentum_walk1</span>(<span class="dv">10</span>, <span class="fl">0.6</span>)      </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -1  1</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">momentum_walk2</span>(<span class="dv">10</span>, <span class="fl">0.6</span>)      </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -1  1</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">momentum_walk1</span>(<span class="dv">1000</span>, <span class="fl">0.6</span>)    </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -46  -4</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">momentum_walk2</span>(<span class="dv">1000</span>, <span class="fl">0.6</span>)    </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -46  -4</code></pre>
+</div>
+</div>
+<p>What I did:</p>
+<p>I used ‘set.seed(integer)’ immediately before running the random‑walk simulation. And then use ‘momentum_walk1()’ and ‘momentum_walk1()’ with identical function arguments.</p>
+<p>Seed values 42 and 123 are arbitrary integers; any valid integer would serve the same purpose. After setting the same seed, the simulation produced exactly matching final‑position outputs on repeated runs.</p>
+<p>Why it works:</p>
+<p>R does not produce truly random numbers; it uses a deterministic pseudo‑random‑number algorithm. Once a seed is fixed, every subsequent call to random‑generating functions will return the identical sequence of random numbers.</p>
+<p>As a result, the sequence of directions chosen inside the momentum walk stays unchanged, so the simulated walk ends at the same coordinate.</p>
+<p>This achieves reproducibility.</p>
+</section>
+<section id="d.-does-momentum-matter" class="level2">
+<h2 class="anchored" data-anchor-id="d.-does-momentum-matter">d.&nbsp;Does momentum matter?</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>w0   <span class="ot">&lt;-</span> <span class="fu">momentum_walk1</span>(<span class="dv">1000</span>, <span class="dv">0</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>w05  <span class="ot">&lt;-</span> <span class="fu">momentum_walk1</span>(<span class="dv">1000</span>, <span class="fl">0.5</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>w09  <span class="ot">&lt;-</span> <span class="fu">momentum_walk1</span>(<span class="dv">1000</span>, <span class="fl">0.9</span>)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">paste0</span>(<span class="st">"p=0:   ("</span>, w0[<span class="dv">1</span>], <span class="st">", "</span>, w0[<span class="dv">2</span>], <span class="st">"), D = "</span>, <span class="fu">round</span>(<span class="fu">sqrt</span>(<span class="fu">sum</span>(w0<span class="sc">^</span><span class="dv">2</span>)), <span class="dv">2</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "p=0:   (-10, 28), D = 29.73"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">paste0</span>(<span class="st">"p=0.5: ("</span>, w05[<span class="dv">1</span>], <span class="st">", "</span>, w05[<span class="dv">2</span>], <span class="st">"), D = "</span>, <span class="fu">round</span>(<span class="fu">sqrt</span>(<span class="fu">sum</span>(w05<span class="sc">^</span><span class="dv">2</span>)), <span class="dv">2</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "p=0.5: (-33, 49), D = 59.08"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">paste0</span>(<span class="st">"p=0.9: ("</span>, w09[<span class="dv">1</span>], <span class="st">", "</span>, w09[<span class="dv">2</span>], <span class="st">"), D = "</span>, <span class="fu">round</span>(<span class="fu">sqrt</span>(<span class="fu">sum</span>(w09<span class="sc">^</span><span class="dv">2</span>)), <span class="dv">2</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "p=0.9: (-82, -4), D = 82.1"</code></pre>
+</div>
+</div>
+<ol type="i">
+<li>Compare the final distances for the three simulations.</li>
+</ol>
+<p>We simulate three 1000‑step walks for (p=0, 0.5, 0.9). Euclidean distance (<span class="math inline">\(D=\sqrt{x^2+y^2}\)</span>) is computed for each final position.</p>
+<p>From the output, distance grows as p increases.</p>
+<ol start="2" type="i">
+<li>Does increasing momentum appear to increase or decrease the final distance?</li>
+</ol>
+<p>Increasing momentum appears to increase the final distance from the starting point.</p>
+<ol start="3" type="i">
+<li>Explain your reasoning (optional).</li>
+</ol>
+<p>Higher momentum makes the walker persist in the same direction for many steps. Steps add together instead of cancelling out.</p>
+<p>When (p=0), direction is re‑sampled every step; many steps point backward, so displacement remains small. Larger p produces larger displacement.</p>
+</section>
+<section id="e.-monte-carlo-simulation" class="level2">
+<h2 class="anchored" data-anchor-id="e.-monte-carlo-simulation">e. Monte Carlo simulation</h2>
+<p>This table may need some time to work.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>ps <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span>)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>n_sims <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>n_steps <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">lapply</span>(ps, <span class="cf">function</span>(p_val) {</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  dists <span class="ot">&lt;-</span> <span class="fu">replicate</span>(n_sims, {</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>    pos <span class="ot">&lt;-</span> <span class="fu">momentum_walk1</span>(n_steps, p_val)</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sqrt</span>(pos[<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> pos[<span class="dv">2</span>]<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">p =</span> p_val, <span class="at">mean_distance =</span> <span class="fu">round</span>(<span class="fu">mean</span>(dists), <span class="dv">2</span>))</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>mc_table <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, results)</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(mc_table)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     p mean_distance
+1 0.00         28.06
+2 0.25         34.80
+3 0.50         47.21
+4 0.75         73.47
+5 0.90        123.15</code></pre>
+</div>
+</div>
+<ol start="4" type="i">
+<li>How does the mean final distance change as p increases?</li>
+</ol>
+<p>As p increases, the mean final distance from the starting point increases. Higher momentum makes the walker persist in one direction, so displacements add together rather than cancelling each other. This yields larger average Euclidean distance.</p>
+</section>
+<section id="f.-compare-computational-performance" class="level2">
+<h2 class="anchored" data-anchor-id="f.-compare-computational-performance">f.&nbsp;Compare computational performance</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(microbenchmark)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># n = 1000 steps, p = 0.6</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>mb1 <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">loop  =</span> <span class="fu">momentum_walk1</span>(<span class="dv">1000</span>, <span class="fl">0.6</span>),   <span class="co"># loop</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">apply =</span> <span class="fu">momentum_walk2</span>(<span class="dv">1000</span>, <span class="fl">0.6</span>),    <span class="co"># Reduce</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">times =</span> <span class="dv">100</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in microbenchmark(loop = momentum_walk1(1000, 0.6), apply =
+momentum_walk2(1000, : less accurate nanosecond times to avoid potential
+integer overflows</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"n = 1000, p = 0.6</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>n = 1000, p = 0.6</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(mb1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+  expr      min        lq     mean    median        uq      max neval
+  loop  842.550  870.6965  908.767  892.1395  911.1225 1523.724   100
+ apply 1811.011 1882.9865 1955.832 1916.0735 1942.7440 2618.834   100</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># n = 100000 steps, p = 0.6</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>mb2 <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">loop  =</span> <span class="fu">momentum_walk1</span>(<span class="dv">100000</span>, <span class="fl">0.6</span>),</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">apply =</span> <span class="fu">momentum_walk2</span>(<span class="dv">100000</span>, <span class="fl">0.6</span>),</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">times =</span> <span class="dv">10</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"n = 100000, p = 0.6</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>n = 100000, p = 0.6</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(mb2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: milliseconds
+  expr       min        lq      mean    median        uq       max neval
+  loop  88.69337  89.19837  90.64264  89.63299  92.14984  95.05739    10
+ apply 189.35169 190.68538 196.24934 192.35941 202.98255 213.67859    10</code></pre>
+</div>
+</div>
+<ol type="i">
+<li>Which implementation is faster?</li>
+</ol>
+<p>The ‘loop’ implementation is faster.</p>
+<ol start="2" type="i">
+<li>Does the difference become larger for the larger input?</li>
+</ol>
+<p>Yes,</p>
+<p>n=1000：the time gap is almost 1051 microseconds;</p>
+<p>n=100000：the time gap is almost 115 milliseconds.</p>
+<p>So the time difference becomes larger for the larger input (n=100000).</p>
+<ol start="3" type="i">
+<li>Why might the implementations have different execution times?</li>
+</ol>
+<p>Although ‘Reduce’ belongs to the apply‑family, every iteration invokes an R‑level helper ‘step()’ function. Repeated function‑call overhead accumulates for large n.&nbsp;The plain for‑loop avoids repeated function calls inside each iteration, so it has lower overhead and runs faster.</p>
+</section>
+</section>
+<section id="problem-2-monte-carlo-simulation-of-campus-bus-arrivals" class="level1">
+<h1>Problem 2: Monte Carlo Simulation of Campus Bus Arrivals</h1>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2026</span>)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 6-8 AM</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>block_1 <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(<span class="fu">matrix</span>(<span class="fu">rpois</span>(<span class="dv">3</span> <span class="sc">*</span> n, <span class="at">lambda =</span> <span class="dv">4</span>), <span class="at">ncol =</span> <span class="dv">3</span>))</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 9 AM</span></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>block_2 <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">45</span>, <span class="at">sd =</span> <span class="dv">4</span>)</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 10 AM-3 PM</span></span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>block_3 <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(<span class="fu">matrix</span>(<span class="fu">rpois</span>(<span class="dv">6</span> <span class="sc">*</span> n, <span class="at">lambda =</span> <span class="dv">15</span>), <span class="at">ncol =</span> <span class="dv">6</span>))</span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 4 PM</span></span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>block_4 <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">55</span>, <span class="at">sd =</span> <span class="dv">5</span>)</span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 5-10 PM</span></span>
+<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a>block_5 <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(<span class="fu">matrix</span>(<span class="fu">rpois</span>(<span class="dv">6</span> <span class="sc">*</span> n, <span class="at">lambda =</span> <span class="dv">9</span>), <span class="at">ncol =</span> <span class="dv">6</span>))</span>
+<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a><span class="co"># the sum</span></span>
+<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a>daily_total <span class="ot">&lt;-</span> block_1 <span class="sc">+</span> block_2 <span class="sc">+</span> block_3 <span class="sc">+</span> block_4 <span class="sc">+</span> block_5</span>
+<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a><span class="co"># average daily</span></span>
+<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a>expected_passengers <span class="ot">&lt;-</span> <span class="fu">mean</span>(daily_total)</span>
+<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(expected_passengers)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 255.8766</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># average daily, rounded to nearest integer</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>expected_passengers_nearest <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">mean</span>(daily_total))</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(expected_passengers_nearest)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 256</code></pre>
+</div>
+</div>
+</section>
+<section id="problem-3-linear-regression" class="level1">
+<h1>Problem 3: Linear Regression</h1>
+<p>download data:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>youtube <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-02/youtube.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="a.-data-preparation-and-de-identification" class="level2">
+<h2 class="anchored" data-anchor-id="a.-data-preparation-and-de-identification">a. Data preparation and de-identification</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># origin</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"original names：</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>original names：</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">colnames</span>(youtube))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "year"                      "brand"                    
+ [3] "superbowl_ads_dot_com_url" "youtube_url"              
+ [5] "funny"                     "show_product_quickly"     
+ [7] "patriotic"                 "celebrity"                
+ [9] "danger"                    "animals"                  
+[11] "use_sex"                   "id"                       
+[13] "kind"                      "etag"                     
+[15] "view_count"                "like_count"               
+[17] "dislike_count"             "favorite_count"           
+[19] "comment_count"             "published_at"             
+[21] "title"                     "description"              
+[23] "thumbnail"                 "channel_title"            
+[25] "category_id"              </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"original dim"</span>, <span class="fu">dim</span>(youtube), <span class="st">"</span><span class="sc">\n\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>original dim 247 25 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># removing</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>youtube_deid <span class="ot">&lt;-</span> youtube[, <span class="sc">!</span>(<span class="fu">colnames</span>(youtube) <span class="sc">%in%</span> <span class="fu">c</span>(</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"brand"</span>, <span class="st">"title"</span>, <span class="st">"superbowl_ads_dot_com_url"</span>, <span class="st">"youtube_url"</span>,</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"channel_title"</span>, <span class="st">"published_at"</span>, <span class="st">"id"</span>, <span class="st">"kind"</span>, <span class="st">"etag"</span>,</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"description"</span>, <span class="st">"thumbnail"</span></span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>))]</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a><span class="co"># results</span></span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"after removing："</span>, <span class="fu">dim</span>(youtube_deid), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>after removing： 247 14 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"names after removing：</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>names after removing：</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">colnames</span>(youtube_deid))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "year"                 "funny"                "show_product_quickly"
+ [4] "patriotic"            "celebrity"            "danger"              
+ [7] "animals"              "use_sex"              "view_count"          
+[10] "like_count"           "dislike_count"        "favorite_count"      
+[13] "comment_count"        "category_id"         </code></pre>
+</div>
+</div>
+</section>
+<section id="b.-exploring-potential-outcomes" class="level2">
+<h2 class="anchored" data-anchor-id="b.-exploring-potential-outcomes">b. Exploring potential outcomes</h2>
+<p>Check favorite_count: how many 0?</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(youtube_deid<span class="sc">$</span>favorite_count)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  0 
+231 </code></pre>
+</div>
+</div>
+<p>Plot histograms of the five engagement variables:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>))</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(youtube_deid<span class="sc">$</span>view_count, <span class="at">main =</span> <span class="st">"view_count"</span>, <span class="at">xlab =</span> <span class="st">"Views"</span>)</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(youtube_deid<span class="sc">$</span>like_count, <span class="at">main =</span> <span class="st">"like_count"</span>, <span class="at">xlab =</span> <span class="st">"Likes"</span>)</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(youtube_deid<span class="sc">$</span>dislike_count, <span class="at">main =</span> <span class="st">"dislike_count"</span>, <span class="at">xlab =</span> <span class="st">"Dislikes"</span>)</span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(youtube_deid<span class="sc">$</span>favorite_count, <span class="at">main =</span> <span class="st">"favorite_count"</span>, <span class="at">xlab =</span> <span class="st">"Favorites"</span>)</span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(youtube_deid<span class="sc">$</span>comment_count, <span class="at">main =</span> <span class="st">"comment_count"</span>, <span class="at">xlab =</span> <span class="st">"Comments"</span>)</span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw2_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Calculate the skewness:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>raw_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"view_count"</span>, <span class="st">"like_count"</span>, <span class="st">"dislike_count"</span>, <span class="st">"favorite_count"</span>, <span class="st">"comment_count"</span>)</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a><span class="co">#' Title Calculate sample skewness</span></span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a><span class="co">#' </span></span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a><span class="co">#' Computes the sample skewness coefficient of a numeric vector, ignoring missing values. </span></span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a><span class="co">#' A value near 0 indicates approximate symmetry; </span></span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a><span class="co">#' large positive values indicate right (positive) skewness.</span></span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param x Numeric vector. May contain NA values, which are removed.</span></span>
+<span id="cb60-10"><a href="#cb60-10" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb60-11"><a href="#cb60-11" aria-hidden="true" tabindex="-1"></a><span class="co">#' @returns Numeric scalar: the sample skewness. </span></span>
+<span id="cb60-12"><a href="#cb60-12" aria-hidden="true" tabindex="-1"></a><span class="co">#' @export</span></span>
+<span id="cb60-13"><a href="#cb60-13" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb60-14"><a href="#cb60-14" aria-hidden="true" tabindex="-1"></a><span class="co">#' @examples</span></span>
+<span id="cb60-15"><a href="#cb60-15" aria-hidden="true" tabindex="-1"></a><span class="co">#' calc_skewness(c(1, 2, 3, 4, 5))    # symmetric</span></span>
+<span id="cb60-16"><a href="#cb60-16" aria-hidden="true" tabindex="-1"></a>calc_skewness <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb60-17"><a href="#cb60-17" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> x[<span class="sc">!</span><span class="fu">is.na</span>(x)]</span>
+<span id="cb60-18"><a href="#cb60-18" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">length</span>(x)</span>
+<span id="cb60-19"><a href="#cb60-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (n <span class="sc">==</span> <span class="dv">0</span>) <span class="fu">return</span>(<span class="cn">NA</span>) </span>
+<span id="cb60-20"><a href="#cb60-20" aria-hidden="true" tabindex="-1"></a>  mean_x <span class="ot">&lt;-</span> <span class="fu">mean</span>(x)</span>
+<span id="cb60-21"><a href="#cb60-21" aria-hidden="true" tabindex="-1"></a>  sd_x <span class="ot">&lt;-</span> <span class="fu">sd</span>(x)</span>
+<span id="cb60-22"><a href="#cb60-22" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.na</span>(sd_x) <span class="sc">||</span> sd_x <span class="sc">==</span> <span class="dv">0</span>) <span class="fu">return</span>(<span class="dv">0</span>)</span>
+<span id="cb60-23"><a href="#cb60-23" aria-hidden="true" tabindex="-1"></a>  (<span class="fu">sum</span>((x <span class="sc">-</span> mean_x)<span class="sc">^</span><span class="dv">3</span>) <span class="sc">/</span> n) <span class="sc">/</span> (sd_x<span class="sc">^</span><span class="dv">3</span>)</span>
+<span id="cb60-24"><a href="#cb60-24" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb60-25"><a href="#cb60-25" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Skewness of Raw Variables:</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Skewness of Raw Variables:</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (v <span class="cf">in</span> raw_vars) {</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"%s: %.2f</span><span class="sc">\n</span><span class="st">"</span>, v, <span class="fu">calc_skewness</span>(youtube_deid[[v]])))</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>view_count: 13.63
+like_count: 8.66
+dislike_count: 11.40
+favorite_count: 0.00
+comment_count: 7.88</code></pre>
+</div>
+</div>
+<p>Judgment from the plogs and skewness:</p>
+<ol type="1">
+<li><p>View Counts (Category 2: Transformed) : The raw histogram and high positive skewness (13.63) indicate extreme right-skewness. The log(x+1) transformation compresses the extreme values and reduces the skewness.</p></li>
+<li><p>Like Counts (Category 2: Transformed) : like counts are right-skewed count data(8.66) with heavy tails. The log(x+1) transformation stabilizes the variance and normalizes the distribution.</p></li>
+<li><p>Dislike Counts (Category 2: Transformed) : Dislike counts are right-skewed(11.40) and contain a large number of zeros. The log(x+1) transformation (log1p) is necessary to handle the zeros while reducing the skewness.</p></li>
+<li><p>Favorite Counts (Category 3: Not Appropriate) : As shown by the table() check, this variable is almost entirely zeros. Because linear regression requires variation in the dependent variable to estimate a relationship, this variable is not appropriate as an outcome.</p></li>
+<li><p>Comment Counts (Category 2: Transformed) : Comment counts are right-skewed(7.88) with a long tail and many zero values. The log(x+1) transformation effectively makes the distribution more symmetric.</p></li>
+</ol>
+<p>Classification and calculate the new skewness:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Classification and judgment</span></span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>youtube_deid<span class="sc">$</span>log_view <span class="ot">&lt;-</span> <span class="fu">log</span>(youtube_deid<span class="sc">$</span>view_count <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>youtube_deid<span class="sc">$</span>log_like <span class="ot">&lt;-</span> <span class="fu">log</span>(youtube_deid<span class="sc">$</span>like_count <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>youtube_deid<span class="sc">$</span>log_dislike <span class="ot">&lt;-</span> <span class="fu">log</span>(youtube_deid<span class="sc">$</span>dislike_count <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>youtube_deid<span class="sc">$</span>log_comment <span class="ot">&lt;-</span> <span class="fu">log</span>(youtube_deid<span class="sc">$</span>comment_count <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb64-8"><a href="#cb64-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate skewness for transformed variables to check improvement</span></span>
+<span id="cb64-9"><a href="#cb64-9" aria-hidden="true" tabindex="-1"></a>transformed_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"log_view"</span>, <span class="st">"log_like"</span>, <span class="st">"log_dislike"</span>, <span class="st">"log_comment"</span>)</span>
+<span id="cb64-10"><a href="#cb64-10" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Skewness of Transformed Variables:</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Skewness of Transformed Variables:</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (v <span class="cf">in</span> transformed_vars) {</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"%s: %.2f</span><span class="sc">\n</span><span class="st">"</span>, v, <span class="fu">calc_skewness</span>(youtube_deid[[v]])))</span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>log_view: -0.19
+log_like: 0.28
+log_dislike: 1.33
+log_comment: 0.61</code></pre>
+</div>
+</div>
+</section>
+<section id="c.-fitting-linear-regression-models" class="level2">
+<h2 class="anchored" data-anchor-id="c.-fitting-linear-regression-models">c.&nbsp;Fitting linear regression models</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>binary_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"funny"</span>, <span class="st">"show_product_quickly"</span>, <span class="st">"patriotic"</span>, <span class="st">"celebrity"</span>, <span class="st">"danger"</span>, <span class="st">"animals"</span>, <span class="st">"use_sex"</span>)</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>outcome_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"log_view"</span>, <span class="st">"log_like"</span>, <span class="st">"log_dislike"</span>, <span class="st">"log_comment"</span>)</span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>results_c <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(y_var <span class="cf">in</span> outcome_vars){</span>
+<span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(x_var <span class="cf">in</span> binary_vars){</span>
+<span id="cb68-8"><a href="#cb68-8" aria-hidden="true" tabindex="-1"></a>    form <span class="ot">&lt;-</span> <span class="fu">as.formula</span>(<span class="fu">paste</span>(y_var, <span class="st">"~"</span>, x_var, <span class="st">"+ year"</span>))</span>
+<span id="cb68-9"><a href="#cb68-9" aria-hidden="true" tabindex="-1"></a>    mod <span class="ot">&lt;-</span> <span class="fu">lm</span>(form, <span class="at">data =</span> youtube_deid)</span>
+<span id="cb68-10"><a href="#cb68-10" aria-hidden="true" tabindex="-1"></a>    coef_table <span class="ot">&lt;-</span> <span class="fu">summary</span>(mod)<span class="sc">$</span>coefficients</span>
+<span id="cb68-11"><a href="#cb68-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># beta and Pvalue</span></span>
+<span id="cb68-12"><a href="#cb68-12" aria-hidden="true" tabindex="-1"></a>    beta_est <span class="ot">&lt;-</span> coef_table[<span class="dv">2</span>,<span class="dv">1</span>]</span>
+<span id="cb68-13"><a href="#cb68-13" aria-hidden="true" tabindex="-1"></a>    p_val <span class="ot">&lt;-</span> coef_table[<span class="dv">2</span>,<span class="dv">4</span>]</span>
+<span id="cb68-14"><a href="#cb68-14" aria-hidden="true" tabindex="-1"></a>    results_c <span class="ot">&lt;-</span> <span class="fu">rbind</span>(results_c,</span>
+<span id="cb68-15"><a href="#cb68-15" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">data.frame</span>(</span>
+<span id="cb68-16"><a href="#cb68-16" aria-hidden="true" tabindex="-1"></a>                         <span class="at">Outcome =</span> y_var,</span>
+<span id="cb68-17"><a href="#cb68-17" aria-hidden="true" tabindex="-1"></a>                         <span class="at">Feature =</span> x_var,</span>
+<span id="cb68-18"><a href="#cb68-18" aria-hidden="true" tabindex="-1"></a>                         <span class="at">Coefficient =</span> beta_est,</span>
+<span id="cb68-19"><a href="#cb68-19" aria-hidden="true" tabindex="-1"></a>                         <span class="at">Pvalue =</span> p_val</span>
+<span id="cb68-20"><a href="#cb68-20" aria-hidden="true" tabindex="-1"></a>                       ))</span>
+<span id="cb68-21"><a href="#cb68-21" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb68-22"><a href="#cb68-22" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb68-23"><a href="#cb68-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-24"><a href="#cb68-24" aria-hidden="true" tabindex="-1"></a>results_c</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       Outcome              Feature Coefficient     Pvalue
+1     log_view                funny  0.52984356 0.20510610
+2     log_view show_product_quickly  0.20898031 0.60072225
+3     log_view            patriotic  0.13692497 0.78391866
+4     log_view            celebrity -0.01898556 0.96288885
+5     log_view               danger  0.66678076 0.09406479
+6     log_view              animals -0.17326980 0.64669142
+7     log_view              use_sex -0.29629543 0.49051595
+8     log_like                funny  0.36019066 0.34005646
+9     log_like show_product_quickly  0.16825538 0.64047730
+10    log_like            patriotic  0.49311233 0.28968290
+11    log_like            celebrity  0.26297830 0.47787826
+12    log_like               danger  0.62526219 0.08031647
+13    log_like              animals  0.02459257 0.94282914
+14    log_like              use_sex -0.32497453 0.40008928
+15 log_dislike                funny  0.04148774 0.89580597
+16 log_dislike show_product_quickly  0.24290875 0.42097425
+17 log_dislike            patriotic  0.66965405 0.08563747
+18 log_dislike            celebrity -0.28325315 0.36162721
+19 log_dislike               danger  0.18514931 0.53794989
+20 log_dislike              animals -0.07378053 0.79742453
+21 log_dislike              use_sex -0.38888066 0.22927926
+22 log_comment                funny  0.04746590 0.87934573
+23 log_comment show_product_quickly  0.34602814 0.24685774
+24 log_comment            patriotic  0.51478460 0.16854269
+25 log_comment            celebrity  0.22806291 0.45558834
+26 log_comment               danger  0.10642262 0.72095533
+27 log_comment              animals -0.19176266 0.49906680
+28 log_comment              use_sex -0.34939714 0.27353634</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="co"># α=0.05</span></span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>results_c[results_c<span class="sc">$</span>Pvalue <span class="sc">&lt;</span> <span class="fl">0.05</span>, ]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] Outcome     Feature     Coefficient Pvalue     
+&lt;0 rows&gt; (or 0-length row.names)</code></pre>
+</div>
+</div>
+<ol type="1">
+<li><p>At the α = 0.05 level, none of the 28 fitted models shows a statistically significant association between a commercial characteristic and YouTube engagement.</p>
+<p>The smallest p-value is approximately 0.08 (for ‘danger’ predicting ‘log_like’), which is marginally significant but does not pass the 0.05 threshold.</p></li>
+<li><p>Several characteristics show positive coefficients (e.g., ‘funny’, ‘patriotic’, ‘danger’), meaning ads with those features tend to have higher log-engagement, while ‘animals’ and ‘use_sex’ tend to have negative coefficients. However, none of these estimates is statistically significant.</p></li>
+<li><p>For log_view, the largest positive estimated coefficient is ‘danger’ (β ~ 0.67, p ~ 0.094). This variable also has the smallest p-value among the seven characteristics for predicting view counts.</p></li>
+</ol>
+</section>
+<section id="d.-estimating-regression-coefficients-using-matrix-algebra" class="level2">
+<h2 class="anchored" data-anchor-id="d.-estimating-regression-coefficients-using-matrix-algebra">d.&nbsp;Estimating regression coefficients using matrix algebra</h2>
+<p>I selected ‘danger’ because it had the smallest p-value and the largest positive coefficient for predicting ‘log_view’ in part (c).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="co"># remove missing values first</span></span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(youtube_deid[, <span class="fu">c</span>(<span class="st">"log_view"</span>, <span class="st">"danger"</span>, <span class="st">"year"</span>)])</span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> df<span class="sc">$</span>log_view</span>
+<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">intercept =</span> <span class="dv">1</span>,</span>
+<span id="cb72-6"><a href="#cb72-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">danger    =</span> df<span class="sc">$</span>danger,</span>
+<span id="cb72-7"><a href="#cb72-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">year      =</span> df<span class="sc">$</span>year)</span>
+<span id="cb72-8"><a href="#cb72-8" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(X)</span>
+<span id="cb72-9"><a href="#cb72-9" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(y)</span>
+<span id="cb72-10"><a href="#cb72-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-11"><a href="#cb72-11" aria-hidden="true" tabindex="-1"></a><span class="co"># beta_hat = (X^T X)^(-1) X^T y</span></span>
+<span id="cb72-12"><a href="#cb72-12" aria-hidden="true" tabindex="-1"></a>beta_hat <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">t</span>(X) <span class="sc">%*%</span> X) <span class="sc">%*%</span> <span class="fu">t</span>(X) <span class="sc">%*%</span> y</span>
+<span id="cb72-13"><a href="#cb72-13" aria-hidden="true" tabindex="-1"></a>beta_hat</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                  [,1]
+intercept -31.39149243
+danger      0.66678076
+year        0.02065641</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify with lm()</span></span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>mod_lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(log_view <span class="sc">~</span> danger <span class="sc">+</span> year, df)</span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod_lm)<span class="sc">$</span>coefficients</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                Estimate  Std. Error   t value   Pr(&gt;|t|)
+(Intercept) -31.39149243 63.93249584 -0.491010 0.62389167
+dangerTRUE    0.66678076  0.39657536  1.681347 0.09406479
+year          0.02065641  0.03179813  0.649611 0.51659744</code></pre>
+</div>
+</div>
+<p>I computed the OLS estimates via the matrix formula <span class="math inline">\(\(\hat{\boldsymbol{\beta}} = (X^\top X)^{-1} X^\top y\)\)</span>.</p>
+<p>The resulting estimates are <span class="math inline">\(\(\hat\beta_0 \approx -31.39\)\)</span>, <span class="math inline">\(\(\hat\beta_{\text{danger}} \approx 0.67\)\)</span>, and <span class="math inline">\(\(\hat\beta_{\text{year}} \approx 0.02\)\)</span>.</p>
+<p>These match the output of ‘lm(log_view ~ danger + year, data = df)’ to numerical precision, confirming that the manual matrix calculation is correct.</p>
+</section>
 </section>
 
 </main>
